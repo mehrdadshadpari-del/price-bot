@@ -68,6 +68,8 @@ def send(text):
         json={"chat_id": CHAT_ID, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True},
         timeout=30,
     )
+    if not r.ok:
+        print("TELEGRAM ERROR:", r.status_code, r.text)
     r.raise_for_status()
 
 

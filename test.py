@@ -3,12 +3,10 @@ import re
 import requests
 
 URLS = [
-    "https://www.tgju.org/gold-chart",
-    "https://www.tgju.org/currency",
-    "https://arzdigital.com/gold/melted-gold-mithqal/",
-    "https://charteix.com",
+    "https://www.tgju.org/profile/geram18",
+    "https://www.tgju.org/profile/mesghal",
+    "https://www.tgju.org/profile/crypto-tether",
 ]
-KEYWORDS = ["18 عیار", "18عیار", "تتر", "مثقال", "آبشده", "فردایی", "حاضر"]
 
 for url in URLS:
     print("=" * 60)
@@ -16,13 +14,10 @@ for url in URLS:
     try:
         r = requests.get(url, timeout=30, headers={"User-Agent": "Mozilla/5.0"})
         print("status:", r.status_code, "| size:", len(r.text))
-        text = re.sub(r"<[^>]+>", " ", r.text)
-        text = re.sub(r"\s+", " ", text)
-        for kw in KEYWORDS:
-            i = text.find(kw)
-            if i >= 0:
-                print(f"[{kw}] ->", text[max(0, i - 20): i + 120])
-            else:
-                print(f"[{kw}] -> NOT FOUND")
+        found = re.findall(r'data-col="([^"]+)"[^>]*>\s*([^<]{1,40})<', r.text)
+        for name, value in found[:25]:
+            print(name, "=>", value.strip())
+        if not found:
+            print("no data-col found")
     except Exception as exc:
         print("ERROR:", exc)

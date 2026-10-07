@@ -9,7 +9,7 @@ import requests
 
 TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
 CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "@academymehrdad")
-CHANNEL_TAG = "@academymehrdad"
+CHANNEL_TAG = "@academymehrdadT"
 
 TEHRAN = ZoneInfo("Asia/Tehran")
 STATE_FILE = "state.json"

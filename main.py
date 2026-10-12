@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import requests
 
 TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "@academymehrdad")
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "@academymehrdadt")
 CHANNEL_TAG = "@academymehrdadT"
 
 TEHRAN = ZoneInfo("Asia/Tehran")

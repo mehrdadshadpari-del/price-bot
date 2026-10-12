@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 import requests
 
 TOKEN = os.environ["TELEGRAM_BOT_TOKEN"]
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "@academymehrdadt")
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "@academymehrdadT")
 CHANNEL_TAG = "@academymehrdadT"
 
 TEHRAN = ZoneInfo("Asia/Tehran")
@@ -16,6 +16,8 @@ STATE_FILE = "state.json"
 
 # ساعت‌هایی (به وقت تهران) که قیمت‌ها در کانال ارسال می‌شوند
 SLOTS = [9, 12, 15, 18, 21]
+# اگه اجرا دیر رسید، تا این‌قدر ساعت بعد از ساعت ارسال هم می‌فرسته
+CATCHUP_HOURS = 2
 
 MAZANNEH_FACTOR = 4.3318  # قیمت هر گرم ۱۸ عیار × این عدد = مظنه (مثقال)
 
@@ -81,15 +83,31 @@ def load_state():
         return {}
 
 
+def current_slot(now):
+    """آخرین ساعت ارسالی که هنوز تو بازه‌ی جبران است (یا None)."""
+    for s in sorted(SLOTS, reverse=True):
+        if s <= now.hour <= s + CATCHUP_HOURS:
+            return s
+    return None
+
+
 def main():
     now = datetime.now(TEHRAN)
     force = os.environ.get("FORCE_SEND") == "1"
-    slot_key = f"{now:%Y-%m-%d}-{now.hour}"
+    slot = current_slot(now)
+    slot_key = f"{now:%Y-%m-%d}-{slot}"
     state = load_state()
+    print(
+        f"price-bot v2 | {now:%Y-%m-%d %H:%M} تهران | slot: {slot} "
+        f"| last_slot: {state.get('last_slot')!r} | force: {force}"
+    )
 
     if not force:
-        if now.hour not in SLOTS or state.get("last_slot") == slot_key:
-            print("nothing to do now")
+        if slot is None:
+            print("nothing to do now: خارج از بازه‌ی ارسال")
+            return
+        if state.get("last_slot") == slot_key:
+            print("nothing to do now: این نوبت قبلاً ارسال شده")
             return
 
     try:
@@ -101,6 +119,7 @@ def main():
 
     mazanneh = round(gram18 * MAZANNEH_FACTOR / 1000) * 1000
     send(build_message(now, tether, gram18, mazanneh))
+    print("پیام قیمت ارسال شد")
 
     if not force:
         state["last_slot"] = slot_key
